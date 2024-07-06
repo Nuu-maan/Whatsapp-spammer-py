@@ -1,50 +1,83 @@
 import time
-import pyautogui
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-driver=webdriver.Chrome('./chromedriver')
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+
+# Initialize Chrome WebDriver
+chrome_options = Options()
+chrome_options.add_argument("--user-data-dir=chrome-data")  # Preserve login session
+chrome_options.add_argument("--remote-debugging-port=9222")
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service, options=chrome_options)
+
+# Open WhatsApp Web
 driver.get('https://web.whatsapp.com/')
 
-input("Press any key after logging in your whatsapp web account")
-
+# Wait for the user to log in
+input("Press Enter after logging in to your WhatsApp Web account...")
 
 while True:
-    name=input("Enter the user name:")
-    spam_message=input("Enter your spam message:")
+    phone_number = input("Enter the phone number: ")
+    spam_message = input("Enter your spam message: ")
     try:
-        frequency=int(input("How many times do you want to send the message:"))
+        frequency = int(input("How many times do you want to send the message: "))
     except ValueError:
-        frequency=5    
-    response=input("Response accordingly to initiate spamming (y/n):")
+        frequency = 5    
+    response = input("Response accordingly to initiate spamming (y/n): ")
+
     try:
-        user = driver.find_element_by_xpath('//span[@title = "{}"]'.format(name))
-    except:
-        print("User not found :(")
+        # Use explicit wait to ensure the search bar is present
+        search_box = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]'))
+        )
+        search_box.clear()
+        search_box.send_keys(phone_number)
+        search_box.send_keys(Keys.ENTER)
+
+        # Wait for the contact to appear and click
+        user = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//div[@role="row"][@tabindex="0"]'))
+        )
+        user.click()
+    except Exception as e:
+        print("User not found :(", e)
         break
-    user.click()
-    time.sleep(2)
-    msgfield = driver.find_element_by_class_name("_3uMse")
-    c=0
-    flag=0
-    if response=='y':
+
+    try:
+        # Adjust the selector for the message input field
+        msgfield = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//div[@contenteditable="true"][@data-tab="10"]'))
+        )
+    except Exception as e:
+        print("Message field not found :(", e)
+        break
+
+    if response.lower() == 'y':
         print("Spamming initiated...")
-        for c in range(1,frequency+1):
+        for _ in range(frequency):
             try:
                 msgfield.send_keys(spam_message)
-                time.sleep(0.5)
                 msgfield.send_keys(Keys.ENTER)
-            except:
-                print("Some error occured :(") 
-                flag=1
+                time.sleep(0.1)  # Delay between messages
+            except Exception as e:
+                print("An error occurred while sending the message :(", e)
                 break
-        if flag==0:
+        else:
             print("Spamming completed successfully")
     else:
         print("Meet you next time :)")
         break
-    ask=input("Do you want to exit (y/n):")
-    if ask=='y':
+
+    ask = input("Do you want to exit (y/n): ")
+    if ask.lower() == 'y':
         print("Thank you for using our spammer")
         break
-    else:
-        continue
+
+# Close the WebDriver
+driver.quit()
