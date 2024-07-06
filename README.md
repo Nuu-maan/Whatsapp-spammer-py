@@ -1,7 +1,7 @@
 # WhatsApp Spammer
 
 <p align="center">
-  <img src="https://example.com/logo.png" alt="Logo" width="150">
+  <img src="logo.png" alt="Logo" width="150">
 </p>
 
 <p align="center">
