@@ -22,7 +22,7 @@
 ## Requirements
 
 <ul>
-<li> The `requirements.txt` file includes necessary dependencies for this project: </li>
+<li> The <code>requirements.txt</code> file includes necessary dependencies for this project: </li>
   <li>Python 3.x</li>
   <li>Google Chrome browser</li>
   <li>ChromeDriver</li>
